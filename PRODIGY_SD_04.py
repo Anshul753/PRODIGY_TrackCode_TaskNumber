@@ -1,42 +1,55 @@
-def print_grid(grid):
-    for row in grid:
-        print(" ".join(map(str, row)))
-
-
-def is_valid_move(grid, row, col, num):
-    # Check if 'num' is already present in the row or column
+def is_valid_move(board, row, col, num):
+    # Check if the number is not present in the same row and column
     for i in range(9):
-        if grid[row][i] == num or grid[i][col] == num:
+        if board[row][i] == num or board[i][col] == num:
             return False
 
-    # Check if 'num' is already present in the 3x3 grid
+    # Check if the number is not present in the same 3x3 subgrid
     start_row, start_col = 3 * (row // 3), 3 * (col // 3)
-    for i in range(3):
-        for j in range(3):
-            if grid[start_row + i][start_col + j] == num:
+    for i in range(start_row, start_row + 3):
+        for j in range(start_col, start_col + 3):
+            if board[i][j] == num:
                 return False
 
     return True
 
+def solve_sudoku(board):
+    empty_cell = find_empty_cell(board)
+    if not empty_cell:
+        return True  # Puzzle is solved
 
-def solve_sudoku(grid):
-    for row in range(9):
-        for col in range(9):
-            # Find an empty cell
-            if grid[row][col] == 0:
-                # Try placing numbers from 1 to 9
-                for num in range(1, 10):
-                    if is_valid_move(grid, row, col, num):
-                        grid[row][col] = num
-                        if solve_sudoku(grid):
-                            return True
-                        grid[row][col] = 0  # If placement is incorrect, backtrack
-                return False  # If no number can be placed, backtrack to previous cell
-    return True
+    row, col = empty_cell
 
+    for num in range(1, 10):
+        if is_valid_move(board, row, col, num):
+            board[row][col] = num
 
-# Example Sudoku grid (0 represents empty cells)
-sudoku_grid = [
+            if solve_sudoku(board):
+                return True
+
+            board[row][col] = 0  # Reset the cell if the current placement is incorrect
+
+    return False
+
+def find_empty_cell(board):
+    for i in range(9):
+        for j in range(9):
+            if board[i][j] == 0:
+                return (i, j)
+    return None
+
+def print_board(board):
+    for i in range(9):
+        for j in range(9):
+            print(board[i][j], end=" ")
+            if (j + 1) % 3 == 0 and j < 8:
+                print("|", end=" ")
+        print()
+        if (i + 1) % 3 == 0 and i < 8:
+            print("-" * 21)
+
+# Example Sudoku puzzle (0 represents empty cells)
+sudoku_board = [
     [5, 3, 0, 0, 7, 0, 0, 0, 0],
     [6, 0, 0, 1, 9, 5, 0, 0, 0],
     [0, 9, 8, 0, 0, 0, 0, 6, 0],
@@ -48,8 +61,12 @@ sudoku_grid = [
     [0, 0, 0, 0, 8, 0, 0, 7, 9]
 ]
 
-if solve_sudoku(sudoku_grid):
+print("Input Sudoku puzzle:")
+print_board(sudoku_board)
+print("\nSolving...\n")
+
+if solve_sudoku(sudoku_board):
     print("Solved Sudoku:")
-    print_grid(sudoku_grid)
+    print_board(sudoku_board)
 else:
-    print("No solution exists.")
+    print("No solution exists for the given Sudoku puzzle.")
